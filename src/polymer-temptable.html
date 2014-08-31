@@ -1,0 +1,38 @@
+i<!-- Import Polymer -->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<!-- Define your custom element -->
+<polymer-element name="polymer-temptable">
+
+    <template>
+        <input type="text" id="itemText" />
+        <button on-click="{{addItem}}">Add item</button>
+        <ul>
+            <template repeat="{{item, i in list}}">   
+                <li on-click="{{done}}" data-pos="{{i}}">{{item.label}} // {{item.done}}</li>
+            </template>
+        </ul>
+    </template>
+    <script>
+        Polymer('polymer-temptable', {
+            list: [],
+            addItem: function () {
+                if (this.$.itemText.value) {
+                    // Add a new item
+                    this.list.push({
+                        label: this.$.itemText.value,
+                        done: false
+                    });
+                    // Clean the input
+                    this.$.itemText.value = '';
+                }
+            },
+            done: function(event, detail, sender) {
+                // Negate the selected item
+                this.list[sender.dataset.pos].done = 
+                  !this.list[sender.dataset.pos].done;
+            }
+        });
+    </script>
+
+</polymer-element>

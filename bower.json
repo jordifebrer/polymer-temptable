@@ -1,0 +1,19 @@
+{
+    "name": "polymer-temptable",
+    "version": "0.0.0",
+    "description": "Web Component Temp Table using Polymer",
+    "license": "MIT",
+    "main": "dist/polymer-temptable.html",
+    "keywords": [
+        "polymer",
+        "web-components"
+    ],
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components"
+    ],
+    "dependencies": {
+        "polymer": "Polymer/polymer#~0.3.3"
+    }
+}
