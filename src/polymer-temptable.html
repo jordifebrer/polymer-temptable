@@ -4,33 +4,73 @@ i<!-- Import Polymer -->
 <!-- Define your custom element -->
 <polymer-element name="polymer-temptable">
 
-    <template>
-        <input type="text" id="itemText" />
-        <button on-click="{{addItem}}">Add item</button>
-        <ul>
-            <template repeat="{{item, i in list}}">   
-                <li on-click="{{done}}" data-pos="{{i}}">{{item.label}} // {{item.done}}</li>
-            </template>
-        </ul>
-    </template>
+    <template hidden?="{{!ready}}">
+        <div hidden?="{{!ls}}">
+            <input type="text" id="itemText" />
+            <button on-click="{{add}}">Add item</button>
+            <button on-click="{{reset}}">Reset items</button>
+            <ul>
+                <template repeat="{{item, i in list}}">   
+                    <li on-click="{{done}}" data-pos="{{i}}">{{item.label}} // {{item.done}}</li>
+                </template>
+            </ul>
+        </div>
+        <div hidden?="{{ls}}">Error. No localStorage!</div>
+    </template>    
     <script>
         Polymer('polymer-temptable', {
             list: [],
-            addItem: function () {
+            ls: false,
+            ready: function() {
+                if (this.hasLocalStorage()) {
+                    this.ls = true;
+                    if (localStorage.getItem("tempList") === null) {
+                        localStorage.setItem("tempList", JSON.stringify([]));
+                    }
+                    this.load();
+                }
+            },
+            hasLocalStorage: function () {
+                // Check localStorage testing set/remove test item
+                var test = 'test';
+                try {
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
+                } catch(e) {
+                    return false;
+                }
+            },
+            add: function () {
                 if (this.$.itemText.value) {
-                    // Add a new item
-                    this.list.push({
+                    // Add item to LS
+                    var v = JSON.parse(localStorage.getItem("tempList"));
+                    v.push({
                         label: this.$.itemText.value,
                         done: false
                     });
-                    // Clean the input
+                    localStorage.setItem("tempList", JSON.stringify(v));
+                    
+                    // Load list
+                    this.load();
+
+                    // Clean input
                     this.$.itemText.value = '';
                 }
             },
-            done: function(event, detail, sender) {
-                // Negate the selected item
+            done: function (event, detail, sender) {
+                // Negate selected item
                 this.list[sender.dataset.pos].done = 
                   !this.list[sender.dataset.pos].done;
+            },
+            reset: function () {
+                // Reset list
+                this.list = [];
+                localStorage.setItem("tempList", JSON.stringify([]));
+            },
+            load: function () {
+                // Load list
+                this.list = JSON.parse(localStorage.getItem("tempList"));
             }
         });
     </script>
