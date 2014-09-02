@@ -2,7 +2,7 @@ i<!-- Import Polymer -->
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
 <!-- Define your custom element -->
-<polymer-element name="polymer-temptable">
+<polymer-element name="polymer-temptable" attributes="orderBy">
 
     <template hidden?="{{!ready}}">
         <div hidden?="{{!ls}}">
@@ -10,13 +10,14 @@ i<!-- Import Polymer -->
             <button on-click="{{add}}">Add item</button>
             <button on-click="{{reset}}">Reset items</button>
             <ul>
-                <template repeat="{{item, i in list}}">   
-                    <li on-click="{{done}}" data-pos="{{i}}">{{item.label}} // {{item.done}}</li>
+                <template repeat="{{item, i in list}}">
+                    <li on-click="{{change}}" data-pos="{{i}}">{{item.label}} // {{item.done}}</li>
                 </template>
             </ul>
         </div>
         <div hidden?="{{ls}}">Error. No localStorage!</div>
-    </template>    
+    </template>
+    
     <script>
         Polymer('polymer-temptable', {
             list: [],
@@ -24,9 +25,6 @@ i<!-- Import Polymer -->
             ready: function() {
                 if (this.hasLocalStorage()) {
                     this.ls = true;
-                    if (localStorage.getItem("tempList") === null) {
-                        localStorage.setItem("tempList", JSON.stringify([]));
-                    }
                     this.load();
                 }
             },
@@ -43,34 +41,50 @@ i<!-- Import Polymer -->
             },
             add: function () {
                 if (this.$.itemText.value) {
-                    // Add item to LS
-                    var v = JSON.parse(localStorage.getItem("tempList"));
-                    v.push({
+                    // Create item
+                    var item = {
                         label: this.$.itemText.value,
                         done: false
-                    });
-                    localStorage.setItem("tempList", JSON.stringify(v));
-                    
-                    // Load list
-                    this.load();
+                    }
+
+                    // Add item to the list
+                    if (this.orderBy == 'asc') {
+                        this.list.unshift(item);
+                    } else {
+                        this.list.push(item);
+                    }
+
+                    // Save list
+                    this.save();
 
                     // Clean input
-                    this.$.itemText.value = '';
+                    this.clean();
                 }
             },
-            done: function (event, detail, sender) {
+            clean: function () {
+                this.$.itemText.value = '';
+            },
+            change: function (event, detail, sender) {
                 // Negate selected item
-                this.list[sender.dataset.pos].done = 
+                this.list[sender.dataset.pos].done =
                   !this.list[sender.dataset.pos].done;
+                this.save();
+            },
+            load: function () {
+                // Load list from localStorage
+                if (localStorage.getItem("tempList") !== null) {
+                    this.list = JSON.parse(localStorage.getItem("tempList"));
+                }
+            },
+            save: function () {
+                // Save list to localStorage
+                localStorage.setItem("tempList", JSON.stringify(this.list));
             },
             reset: function () {
                 // Reset list
                 this.list = [];
                 localStorage.setItem("tempList", JSON.stringify([]));
-            },
-            load: function () {
-                // Load list
-                this.list = JSON.parse(localStorage.getItem("tempList"));
+                this.clean();
             }
         });
     </script>
